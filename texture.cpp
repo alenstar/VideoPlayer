@@ -58,6 +58,8 @@ void Texture::bind()
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho( _x * 1.0f, _w * 1.0f, _h * 1.0f, _y * 1.0f, 0.0, 1.f);
+    glViewport(0, 0, _w, _h);
+
         glBindTexture(GL_TEXTURE_2D, tex);			// 设置为图像纹理
 
         glBegin( GL_QUADS );
