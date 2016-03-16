@@ -6,10 +6,10 @@
 #include <stdint.h>
 
 // Has to be included *before* ffmpeg, due to a macro collision with ffmpeg (#define PixelFormat in avformat.h - grumble)
-#include <OgreTextureManager.h>
-#include <OgreHardwarePixelBuffer.h>
-#include <OgreResourceGroupManager.h>
-#include <OgreStringConverter.h>
+//#include <OgreTextureManager.h>
+//#include <OgreHardwarePixelBuffer.h>
+//#include <OgreResourceGroupManager.h>
+//#include <OgreStringConverter.h>
 
 extern "C"
 {
@@ -121,7 +121,7 @@ void PacketQueue::put(AVPacket *pkt)
 
 int PacketQueue::get(AVPacket *pkt, VideoState *is)
 {
-    boost::unique_lock<boost::mutex> lock(this->mutex);
+    std::unique_lock<std::mutex> lock(this->mutex);
     while(!is->mQuit)
     {
         AVPacketList *pkt1 = this->first_pkt;
@@ -220,10 +220,12 @@ int64_t VideoState::OgreResource_Seek(void *user_data, int64_t offset, int whenc
 #else 
 int VideoState::OgreResource_Read(void *user_data, uint8_t *buf, int buf_size)
 {
-    std::ifstream stream = static_cast<VideoState*>(user_data)->stream;
+    //std::fstream stream = static_cast<VideoState*>(user_data)->stream;
     try
     {
-        return stream->read(buf, buf_size);
+        return static_cast<VideoState*>(user_data)->stream->read(buf, buf_size);
+        //return buf_size;
+        //return stream->read(buf, buf_size);
     }
     catch (std::exception& e)
     {
@@ -233,10 +235,11 @@ int VideoState::OgreResource_Read(void *user_data, uint8_t *buf, int buf_size)
 
 int VideoState::OgreResource_Write(void *user_data, uint8_t *buf, int buf_size)
 {
-    std::ifstream stream = static_cast<VideoState*>(user_data)->stream;
+    //std::fstream stream = static_cast<VideoState*>(user_data)->stream;
     try
     {
-        return stream->write(buf, buf_size);
+        return static_cast<VideoState*>(user_data)->stream->write(buf, buf_size);
+        //return stream->write(buf, buf_size);
     }
     catch (std::exception& e)
     {
@@ -246,17 +249,17 @@ int VideoState::OgreResource_Write(void *user_data, uint8_t *buf, int buf_size)
 
 int64_t VideoState::OgreResource_Seek(void *user_data, int64_t offset, int whence)
 {
-    std::ifstream stream = static_cast<VideoState*>(user_data)->stream;
+    Streams::FileStreamPtr stream = static_cast<VideoState*>(user_data)->stream;
 
     whence &= ~AVSEEK_FORCE;
     if(whence == AVSEEK_SIZE)
         return stream->size();
     if(whence == SEEK_SET)
-        stream->seek(offset);
+        stream->seek(offset, Streams::Stream::SeekDirection::Begin);
     else if(whence == SEEK_CUR)
-        stream->seek(stream->tell()+offset);
+        stream->seek(stream->tell()+offset, Streams::Stream::SeekDirection::Current);
     else if(whence == SEEK_END)
-        stream->seek(stream->size()+offset);
+        stream->seek(stream->size()+offset, Streams::Stream::SeekDirection::End);
     else
         return -1;
 
@@ -268,6 +271,7 @@ void VideoState::video_display(VideoPicture *vp)
 {
     if((*this->video_st)->codec->width != 0 && (*this->video_st)->codec->height != 0)
     {
+        /*
         if (mTexture.isNull())
         {
             static int i = 0;
@@ -283,12 +287,13 @@ void VideoState::video_display(VideoPicture *vp)
         Ogre::PixelBox pb((*this->video_st)->codec->width, (*this->video_st)->codec->height, 1, Ogre::PF_BYTE_RGBA, &vp->data[0]);
         Ogre::HardwarePixelBufferSharedPtr buffer = mTexture->getBuffer();
         buffer->blitFromMemory(pb);
+        */
     }
 }
 
 void VideoState::video_refresh()
 {
-    boost::mutex::scoped_lock lock(this->pictq_mutex);
+    std::unique_lock<std::mutex> lock(this->pictq_mutex);
     if(this->pictq_size == 0)
         return;
 
@@ -341,9 +346,9 @@ int VideoState::queue_picture(AVFrame *pFrame, double pts)
 
     /* wait until we have a new pic */
     {
-        boost::unique_lock<boost::mutex> lock(this->pictq_mutex);
+        std::unique_lock<std::mutex> lock(this->pictq_mutex);
         while(this->pictq_size >= VIDEO_PICTURE_QUEUE_SIZE && !this->mQuit)
-            this->pictq_cond.timed_wait(lock, boost::posix_time::milliseconds(1));
+            this->pictq_cond.wait_for(lock, std::chrono::milliseconds(1));
     }
     if(this->mQuit)
         return -1;
@@ -556,7 +561,7 @@ void VideoState::decode_thread_loop(VideoState *self)
             if((self->audio_st && self->audioq.size > MAX_AUDIOQ_SIZE) ||
                (self->video_st && self->videoq.size > MAX_VIDEOQ_SIZE))
             {
-                boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 continue;
             }
 
@@ -581,9 +586,10 @@ void VideoState::decode_thread_loop(VideoState *self)
     catch(std::runtime_error& e) {
         std::cerr << "An error occured playing the video: " << e.what () << std::endl;
     }
+    /*
     catch(Ogre::Exception& e) {
         std::cerr << "An error occured playing the video: " << e.getFullDescription () << std::endl;
-    }
+    }*/
 
     self->mQuit = true;
 }
@@ -642,7 +648,7 @@ int VideoState::stream_open(int stream_index, AVFormatContext *pFormatCtx)
 
         codecCtx->get_buffer = our_get_buffer;
         codecCtx->release_buffer = our_release_buffer;
-        this->video_thread = boost::thread(video_thread_loop, this);
+        this->video_thread = std::thread(video_thread_loop, this);
         break;
 
     default:
@@ -666,7 +672,8 @@ void VideoState::init(const std::string& resourceName)
     if(this->stream.isNull())
         throw std::runtime_error("Failed to open video resource");
 #else
-    if(this->stream.open(resourceName, std::ios::in | std::ios::binary, 0))
+    this->stream = Streams::FileStreamPtr(new Streams::FileStream(resourceName));
+    if(! this->stream->good())
         throw std::runtime_error("Failed to open video resource");
 #endif
 
@@ -729,7 +736,7 @@ void VideoState::init(const std::string& resourceName)
     }
 
 
-    this->parse_thread = boost::thread(decode_thread_loop, this);
+    this->parse_thread = std::thread(decode_thread_loop, this);
 }
 
 void VideoState::deinit()
@@ -776,10 +783,10 @@ void VideoState::deinit()
         avformat_close_input(&this->format_ctx);
     }
 
-    if (!mTexture.isNull())
+    if (mTexture != nullptr)
     {
-        Ogre::TextureManager::getSingleton().remove(mTexture->getName());
-        mTexture.setNull();
+        //Ogre::TextureManager::getSingleton().remove(mTexture->getName());
+        //mTexture.setNull();
     }
 }
 
@@ -838,7 +845,7 @@ ExternalClock::ExternalClock()
 
 void ExternalClock::setPaused(bool paused)
 {
-    boost::mutex::scoped_lock lock(mMutex);
+    std::unique_lock<std::mutex> (mMutex);
     if (mPaused == paused)
         return;
     if (paused)
@@ -852,7 +859,7 @@ void ExternalClock::setPaused(bool paused)
 
 uint64_t ExternalClock::get()
 {
-    boost::mutex::scoped_lock lock(mMutex);
+    std::unique_lock<std::mutex> lock(mMutex);
     if (mPaused)
         return mPausedAt;
     else
@@ -861,9 +868,29 @@ uint64_t ExternalClock::get()
 
 void ExternalClock::set(uint64_t time)
 {
-    boost::mutex::scoped_lock lock(mMutex);
+    std::unique_lock<std::mutex> lock(mMutex);
     mTimeBase = av_gettime() - time;
     mPausedAt = time;
+}
+
+int Texture::getWidth()
+{
+    return 0;
+}
+
+int Texture::getHeight()
+{
+    return 0;
+}
+
+bool Texture::isNull()
+{
+    return true;
+}
+
+std::string Texture::getName()
+{
+    return std::string("");
 }
 
 }

@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include <SDL.h>
-#include <SDL_audio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 
 
 class SDLMovieAudioDecoder : public Video::MovieAudioDecoder
@@ -62,9 +62,9 @@ SDLMovieAudioDecoder::~SDLMovieAudioDecoder()
     SDL_CloseAudioDevice(mDeviceId);
 }
 
-boost::shared_ptr<Video::MovieAudioDecoder> SDLMovieAudioFactory::createDecoder(Video::VideoState* videoState)
+std::shared_ptr<Video::MovieAudioDecoder> SDLMovieAudioFactory::createDecoder(Video::VideoState* videoState)
 {
-    boost::shared_ptr<Video::MovieAudioDecoder> ptr (new SDLMovieAudioDecoder(videoState));
+    std::shared_ptr<Video::MovieAudioDecoder> ptr (new SDLMovieAudioDecoder(videoState));
     return ptr;
 }
 
