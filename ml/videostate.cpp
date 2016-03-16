@@ -74,6 +74,9 @@ VideoState::VideoState()
 
     // Register all formats and codecs
     av_register_all();
+
+
+    mTexture.reset(new Texture());
 }
 
 VideoState::~VideoState()
@@ -288,14 +291,21 @@ void VideoState::video_display(VideoPicture *vp)
         Ogre::HardwarePixelBufferSharedPtr buffer = mTexture->getBuffer();
         buffer->blitFromMemory(pb);
         */
+        if (mTexture->tex){
+            mTexture->load(&vp->data[0], (*this->video_st)->codec->width, (*this->video_st)->codec->height);
+            mTexture->bind();
+        }
     }
+            mTexture->bind();
 }
 
 void VideoState::video_refresh()
 {
     std::unique_lock<std::mutex> lock(this->pictq_mutex);
-    if(this->pictq_size == 0)
+    if(this->pictq_size == 0) {
+        mTexture->bind();
         return;
+    }
 
     if (this->av_sync_type == AV_SYNC_VIDEO_MASTER)
     {
@@ -311,7 +321,10 @@ void VideoState::video_refresh()
     {
         const float threshold = 0.03f;
         if (this->pictq[pictq_rindex].pts > this->get_master_clock() + threshold)
+        {
+            mTexture->bind();
             return; // not ready yet to show this picture
+        }
 
         // TODO: the conversion to RGBA is done in the decoding thread, so if a picture is skipped here, then it was
         // unnecessarily converted. But we may want to replace the conversion by a pixel shader anyway (see comment in queue_picture)
@@ -872,26 +885,5 @@ void ExternalClock::set(uint64_t time)
     mTimeBase = av_gettime() - time;
     mPausedAt = time;
 }
-
-int Texture::getWidth()
-{
-    return 0;
-}
-
-int Texture::getHeight()
-{
-    return 0;
-}
-
-bool Texture::isNull()
-{
-    return true;
-}
-
-std::string Texture::getName()
-{
-    return std::string("");
-}
-
 }
 

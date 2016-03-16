@@ -11,6 +11,19 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = VideoPlayer
 TEMPLATE = app
 
+CONFIG(debug, debug|release) {
+    CONFIG -= debug release
+    CONFIG += debug
+    DEFINES += DEBUG
+    #QMAKE_CXXFLAGS += -O3
+}
+else{
+    CONFIG -= debug release
+    CONFIG += release
+    DEFINES += QT_NO_DEBUG_OUTPUT
+    QMAKE_CXXFLAGS += -O3
+}
+
 QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp\
@@ -25,7 +38,8 @@ SOURCES += main.cpp\
     streams/src/FileStream.cpp \
     streams/src/IOStream.cpp \
     streams/src/MemoryStream.cpp \
-    streams/src/Stream.cpp
+    streams/src/Stream.cpp \
+    texture.cpp
 
 HEADERS  += myglwidget.h \
         videowidgetsurface.h \
@@ -35,6 +49,7 @@ HEADERS  += myglwidget.h \
     ml/videodefs.hpp \
     ml/videoplayer.hpp \
     ml/videostate.hpp \
+    texture.h
 
 
 INCLUDEPATH += streams/include

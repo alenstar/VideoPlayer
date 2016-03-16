@@ -1,6 +1,7 @@
 #ifndef MYGLWIDGET_H
 #define MYGLWIDGET_H
 
+#include <memory>
 #include <QGLWidget>
 #include <QKeyEvent>
 #include <GL/glu.h>
@@ -8,6 +9,8 @@
 #include <QApplication>
 #include <QMediaPlayer>
 #include <QApplication>
+#include "ml/videoplayer.hpp"
+#include "ml/SDLMovieAudioFactory.h"
 #include "videowidgetsurface.h"
 
 class MyGLWidget : public QGLWidget
@@ -39,6 +42,10 @@ private:
     QMediaPlayer *m_player;
     VideoWidgetSurface *m_surface;
     QImage m_oriImage;
+
+    private:
+    std::unique_ptr<Video::VideoPlayer> mVideoPlayer;
+    std::string mVideoFileName;
 };
 
 #endif // MYGLWIDGET_H

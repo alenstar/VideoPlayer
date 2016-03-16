@@ -11,10 +11,11 @@
 #include <thread>
 //#include <boost/thread.hpp>
 
+#include <GL/glu.h>
 #include <stdint.h>
-//#include <OgreTexture.h>
 
 #include "videodefs.hpp"
+#include "texture.h"
 #include <streams/Streams.h>
 using namespace Aeon;
 #define VIDEO_PICTURE_QUEUE_SIZE 50
@@ -82,15 +83,6 @@ struct VideoPicture {
     double pts;
 };
 
-struct Texture {
-public:
-    int getWidth();
-    int getHeight();
-    bool isNull();
-    std::string getName();
-};
-typedef std::shared_ptr <Texture> TexturePtr;
-//typedef std::auto_ptr<Texture> TexturePtr;
 
 struct VideoState {
     VideoState();

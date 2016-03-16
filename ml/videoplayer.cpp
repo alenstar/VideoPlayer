@@ -56,7 +56,7 @@ bool VideoPlayer::update ()
 std::string VideoPlayer::getTextureName()
 {
     std::string name;
-    if (mState && !mState->mTexture->isNull())
+    if (mState && mState->mTexture->isNull())
         name = mState->mTexture->getName();
     return name;
 }

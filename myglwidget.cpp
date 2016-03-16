@@ -10,6 +10,9 @@ MyGLWidget::MyGLWidget(QWidget *parent) :
 {
     showNormal();
     startTimer(15);
+    mVideoPlayer.reset(new Video::VideoPlayer());
+    mVideoPlayer->setAudioFactory(new SDLMovieAudioFactory());
+    mVideoPlayer->playVideo(std::string("b.mp4"));
 }
 
 MyGLWidget::~MyGLWidget()
@@ -18,16 +21,40 @@ MyGLWidget::~MyGLWidget()
 
 void MyGLWidget::resizeGL(int w, int h)
 {
+#if 0
     glViewport (0, 0, (GLsizei)(w), (GLsizei)(h));				// Reset The Current Viewport
     glMatrixMode (GL_PROJECTION);								// Select The Projection Matrix
     glLoadIdentity ();											// Reset The Projection Matrix
     gluPerspective (45.0f, (GLfloat)(w)/(GLfloat)(h),1.0f, 100.0f);// Calculate The Aspect Ratio Of The Window
     glMatrixMode (GL_MODELVIEW);// Select The Modelview Matrix
     glLoadIdentity ();// Reset The Modelview Matrix
+#else
+    if(h == 0)// 防止被零除
+    {
+        h = 1;// 将高设为1
+    }
+    glViewport(0, 0, w, h); //重置当前的视口
+    //下面几行为透视图设置屏幕。意味着越远的东西看起来越小。这么做创建了一个现实外观的场景。
+    //此处透视按照基于窗口宽度和高度的45度视角来计算。0.1f，100.0f是我们在场景中所能绘制深度的起点和终点。
+    //glMatrixMode(GL_PROJECTION)指明接下来的两行代码将影响projection matrix(投影矩阵)。
+    //投影矩阵负责为我们的场景增加透视。 glLoadIdentity()近似于重置。它将所选的矩阵状态恢复成其原始状态。
+    //调用glLoadIdentity()之后我们为场景设置透视图。
+    //glMatrixMode(GL_MODELVIEW)指明任何新的变换将会影响 modelview matrix(模型观察矩阵)。
+    //模型观察矩阵中存放了我们的物体讯息。最后我们重置模型观察矩阵。如果您还不能理解这些术语的含义，请别着急。
+    //在以后的教程里，我会向大家解释。只要知道如果您想获得一个精彩的透视场景的话，必须这么做。
+    glMatrixMode(GL_PROJECTION);// 选择投影矩阵
+    glLoadIdentity();// 重置投影矩阵
+    //设置视口的大小
+    gluPerspective(45.0f,(GLfloat)w/(GLfloat)h,0.1f,100.0f);
+
+    glMatrixMode(GL_MODELVIEW);	//选择模型观察矩阵
+    glLoadIdentity(); // 重置模型观察矩阵
+#endif
 }
 
 void MyGLWidget::initializeGL()
 {
+#if 0
     // 开始用户的初始
     m_angle = 0.0f;// angle为0先
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f);// 黑色背景
@@ -47,6 +74,15 @@ void MyGLWidget::initializeGL()
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);		// 设纹理坐标生成模式为s
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);		// 设纹理坐标生成模式为t
 
+#else
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);				// 黑色背景
+    glClearDepth(1.0);                                  // 设置深度缓存
+    glDepthFunc(GL_LEQUAL);                             // 所作深度测试的类型
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);					// 设置混合因子
+    glShadeModel(GL_SMOOTH);							// 启用阴影平滑
+    glEnable(GL_TEXTURE_2D);							// 启用纹理映射
+#endif
+    /*
     m_player = new QMediaPlayer(this, QMediaPlayer::VideoSurface);
     QString filePath = QApplication::applicationDirPath() + "/Face3.avi";
     m_surface = new VideoWidgetSurface(this);
@@ -54,6 +90,7 @@ void MyGLWidget::initializeGL()
     m_player->setVideoOutput(m_surface);
     m_player->setMedia(QUrl::fromLocalFile(filePath));
     m_player->play();
+    */
 }
 
 void MyGLWidget::paintGL()
@@ -62,6 +99,10 @@ void MyGLWidget::paintGL()
     //下面检查我们是否想画一个背景图.若bg是TRUE,重设模型视角矩阵,
     //画一个单纹理映射的能盖住整个屏幕的矩形(纹理是从AVI从得到的一帧).矩形距离屏面向里20个单位,
     //这样它看起来在对象之后(距离更远).
+
+    mVideoPlayer->update();
+
+    /*
     if (m_bg)							// 背景可见?
     {
         glLoadIdentity();					// 重设模型视角矩阵
@@ -73,15 +114,18 @@ void MyGLWidget::paintGL()
             glTexCoord2f(1.0f, 0.0f); glVertex3f( 11.0f, -8.3f, -20.0f);
         glEnd();
     }
+    */
     //画完背景(或没有),重设模型视角矩阵(使视角中心回到屏幕中央).视角中心再向屏内移进10个单位.然后检查env是否为TRUE.
     //若是,开启球面映射来实现环境映射效果.
-    glLoadIdentity();// 重设模型视角矩阵
-    glTranslatef(0.0f, 0.0f, -10.0f);// 视角中心再向屏内移进10个单位
+    //glLoadIdentity();// 重设模型视角矩阵
+    //glTranslatef(0.0f, 0.0f, -10.0f);// 视角中心再向屏内移进10个单位
+    /*
     if (m_env)							// 环境映射开启?
     {
         glEnable(GL_TEXTURE_GEN_S);				// 开启纹理坐标生成S坐标
         glEnable(GL_TEXTURE_GEN_T);				// 开启纹理坐标生成T坐标
-    }
+    }*/
+#if 0
     //在最后关头我加了以下代码.他绕X轴和Y轴旋转(根据angle的值)然后在Z轴方向移动2单位.这使我们离开了屏幕中心.
     //如果删掉下面三行,对象会在屏幕中心打转.有了下面三行,对象旋转时看起来离我们远一些:)
     //如果你不懂旋转和平移...你就不该读这一章:)
@@ -148,12 +192,14 @@ void MyGLWidget::paintGL()
         gluCylinder(m_quadratic,1.0f,1.0f,3.0f,32,32);
         break;
     }
+#endif
+    /*
     //下面检查env是否为TRUE,若是,关闭球面映射.调用glFlush()清空渲染流水线(使在下一帧开始前一切都渲染了).
     if(m_env)                                   // 是否开启了环境渲染
     {
         glDisable(GL_TEXTURE_GEN_S);				// 关闭纹理坐标S
         glDisable(GL_TEXTURE_GEN_T);				// 关闭纹理坐标T
-    }
+    } */
 }
 
 void MyGLWidget::keyPressEvent(QKeyEvent *event)
