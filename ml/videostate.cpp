@@ -293,7 +293,7 @@ void VideoState::video_display(VideoPicture *vp)
         */
         if (mTexture->tex){
             mTexture->load(&vp->data[0], (*this->video_st)->codec->width, (*this->video_st)->codec->height);
-            mTexture->bind();
+            //mTexture->bind();
         }
     }
             mTexture->bind();
@@ -361,7 +361,7 @@ int VideoState::queue_picture(AVFrame *pFrame, double pts)
     {
         std::unique_lock<std::mutex> lock(this->pictq_mutex);
         while(this->pictq_size >= VIDEO_PICTURE_QUEUE_SIZE && !this->mQuit)
-            this->pictq_cond.wait_for(lock, std::chrono::milliseconds(1));
+            this->pictq_cond.wait_for(lock, std::chrono::milliseconds(2));
     }
     if(this->mQuit)
         return -1;
@@ -582,6 +582,9 @@ void VideoState::decode_thread_loop(VideoState *self)
             {
                 if (self->audioq.nb_packets == 0 && self->videoq.nb_packets == 0 && self->pictq_size == 0)
                     self->mVideoEnded = true;
+                else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
                 continue;
             }
             else
@@ -662,6 +665,7 @@ int VideoState::stream_open(int stream_index, AVFormatContext *pFormatCtx)
         codecCtx->get_buffer = our_get_buffer;
         codecCtx->release_buffer = our_release_buffer;
         this->video_thread = std::thread(video_thread_loop, this);
+        this->video_thread.detach();
         break;
 
     default:
@@ -750,6 +754,7 @@ void VideoState::init(const std::string& resourceName)
 
 
     this->parse_thread = std::thread(decode_thread_loop, this);
+    this->parse_thread.detach();
 }
 
 void VideoState::deinit()
