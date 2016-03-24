@@ -291,19 +291,18 @@ void VideoState::video_display(VideoPicture *vp)
         Ogre::HardwarePixelBufferSharedPtr buffer = mTexture->getBuffer();
         buffer->blitFromMemory(pb);
         */
-        if (mTexture->tex){
-            mTexture->load(&vp->data[0], (*this->video_st)->codec->width, (*this->video_st)->codec->height);
-            //mTexture->bind();
-        }
+            //mTexture->load(&vp->data[0], (*this->video_st)->codec->width, (*this->video_st)->codec->height);
+            mTexture->setPixels(&vp->data[0], (*this->video_st)->codec->width, (*this->video_st)->codec->height);
+           //mTexture->bind();
     }
-            mTexture->bind();
+            mTexture->draw();
 }
 
 void VideoState::video_refresh()
 {
     std::unique_lock<std::mutex> lock(this->pictq_mutex);
     if(this->pictq_size == 0) {
-        mTexture->bind();
+        mTexture->draw();
         return;
     }
 
@@ -322,7 +321,7 @@ void VideoState::video_refresh()
         const float threshold = 0.03f;
         if (this->pictq[pictq_rindex].pts > this->get_master_clock() + threshold)
         {
-            mTexture->bind();
+            mTexture->draw();
             return; // not ready yet to show this picture
         }
 

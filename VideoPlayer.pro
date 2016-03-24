@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     streams/src/IOStream.cpp \
     streams/src/MemoryStream.cpp \
     streams/src/Stream.cpp \
-    texture.cpp
+    texture.cpp \
+    Matrices.cpp
 
 HEADERS  += myglwidget.h \
         videowidgetsurface.h \
@@ -49,7 +50,9 @@ HEADERS  += myglwidget.h \
     ml/videodefs.hpp \
     ml/videoplayer.hpp \
     ml/videostate.hpp \
-    texture.h
+    texture.h \
+    Matrices.h \
+    Vectors.h
 
 
 INCLUDEPATH += streams/include
@@ -57,4 +60,4 @@ INCLUDEPATH += streams/include
 #avi.path = $$OUT_PWD/debug
 #INSTALLS += avi
 
-LIBS += -lglut -lGLU -lSDL2 -lavformat -lavdevice -lavcodec -lavutil -lavfilter -lswscale -lavresample
+LIBS += -pthread -lm -lglut -lGL -lGLU -lSDL2 -lavformat -lavdevice -lavcodec -lavutil -lavfilter -lswscale -lavresample
