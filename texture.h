@@ -72,6 +72,7 @@ class Texture {
 private:
     std::string _name;
     int _x, _y, _w, _h;
+    float _scale;
 
     GLuint vert;
     GLuint frag;
@@ -100,6 +101,8 @@ public:
     void draw(int x, int y, int w, int h);
     void draw();
     void resize(int w, int h);
+    void setScale(float s);
+    float getScale();
     void setPixels(uint8_t *pixels, int w, int h);
     void setYPixels(uint8_t *pixels, int stride);
     void setUPixels(uint8_t *pixels, int stride);

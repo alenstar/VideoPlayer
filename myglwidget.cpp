@@ -4,9 +4,7 @@
 //在OpenGL中如何播放AVI呢？利用Windows的API把每一帧作为纹理绑定到OpenGL中，虽然很慢，但它的效果不错。你可以试试。
 
 MyGLWidget::MyGLWidget(QWidget *parent) :
-    QGLWidget(parent), m_show_full_screen(false), m_angle(0),
-    m_effect(0), m_env(true), m_bg(true), m_quadratic(NULL),
-    m_player(NULL), m_surface(NULL)
+    QGLWidget(parent), m_show_full_screen(false), m_angle(0)
 {
     showNormal();
     startTimer(15);
@@ -250,17 +248,11 @@ void MyGLWidget::keyPressEvent(QKeyEvent *event)
 
 void MyGLWidget::timerEvent(QTimerEvent *event)
 {
-    m_angle += (float)(15.0)/60.0f;// 根据时间更新angle
-    updateGL();
+    //m_angle += (float)(15.0)/60.0f;// 根据时间更新angle
+    //updateGL();
     QWidget::timerEvent(event);
 }
 
-void MyGLWidget::newAVIImage(QImage image)
-{
-    image = image.mirrored();
-    bindTexture(image);
-    updateGL();
-}
 
 //希望你们喜欢这一章.现在已经凌晨两点了(译者oak:译到这时刚好也是2:00am!)...写这章花了我6小时了.听起来不可思议,
 //可要把东西写通不是件容易的事.本文我读了三边,我力图使文章好懂.不管你信还是不信,对我最重要的是你们能明白代码是

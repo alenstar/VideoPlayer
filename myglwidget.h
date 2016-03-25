@@ -11,7 +11,6 @@
 #include <QApplication>
 #include "ml/videoplayer.hpp"
 #include "ml/SDLMovieAudioFactory.h"
-#include "videowidgetsurface.h"
 
 class MyGLWidget : public QGLWidget
 {
@@ -30,20 +29,14 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
     void timerEvent(QTimerEvent *event);
-private slots:
-    void newAVIImage(QImage image);
+
 private:
     bool m_show_full_screen;
     float m_angle;// 旋转用
     int	m_effect;// 当前效果
     bool m_env;// 环境映射(默认开)
     bool m_bg;// 背景(默认开)
-    GLUquadricObj *m_quadratic;// 存储二次曲面对象
-    QMediaPlayer *m_player;
-    VideoWidgetSurface *m_surface;
-    QImage m_oriImage;
 
-    private:
     std::unique_ptr<Video::VideoPlayer> mVideoPlayer;
     std::string mVideoFileName;
 };

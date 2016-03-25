@@ -28,7 +28,6 @@ QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += main.cpp\
         myglwidget.cpp \
-        videowidgetsurface.cpp \
     ml/audiodecoder.cpp \
     ml/libavwrapper.cpp \
     ml/SDLMovieAudioFactory.cpp \
@@ -40,10 +39,10 @@ SOURCES += main.cpp\
     streams/src/MemoryStream.cpp \
     streams/src/Stream.cpp \
     texture.cpp \
-    Matrices.cpp
+    Matrices.cpp \
+    shader.cpp
 
 HEADERS  += myglwidget.h \
-        videowidgetsurface.h \
     ml/audiodecoder.hpp \
     ml/audiofactory.hpp \
     ml/SDLMovieAudioFactory.h \
@@ -52,7 +51,8 @@ HEADERS  += myglwidget.h \
     ml/videostate.hpp \
     texture.h \
     Matrices.h \
-    Vectors.h
+    Vectors.h \
+    shader.h
 
 
 INCLUDEPATH += streams/include
