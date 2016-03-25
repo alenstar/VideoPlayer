@@ -181,14 +181,6 @@ void Texture::draw()
         return;
     }
 
-    /*
-    glBindTexture(GL_TEXTURE_2D, y_tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, y_pixels);
-*/
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho( _x * 1.0f, _w * _scale, _h * _scale, _y * 1.0f, 0.0, 1.f);
@@ -229,28 +221,6 @@ float Texture::getScale()
 }
 
 void Texture::setPixels(uint8_t* pixels, int w, int h) {
-    /*
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho( _x * 1.0f, _w * 1.0f, _h * 1.0f, _y * 1.0f, 0.0, 1.f);
-    glViewport(0, 0, _w, _h);
-
-    glBindTexture(GL_TEXTURE_2D, y_tex);			// 设置为图像纹理
-    glBegin( GL_QUADS );
-    glTexCoord2d(0.0,0.0); glVertex2d(0.0, 0.0);
-    glTexCoord2d(1.0,0.0); glVertex2d(_w * 1.0f, 0.0);
-    glTexCoord2d(1.0,1.0); glVertex2d(_w * 1.0f, _h * 1.0f);
-    glTexCoord2d(0.0,1.0); glVertex2d(0.0, _h * 1.0f);
-    glEnd();
-
-    glMatrixMode(GL_MODELVIEW);	//选择模型观察矩阵
-    */
-/*
-    glBindTexture(GL_TEXTURE_2D, y_tex);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w/2, _h/2, GL_RED, GL_UNSIGNED_BYTE, pixels);
-    */
-
     _w = w;
     _h = h;
     glBindTexture(GL_TEXTURE_2D, y_tex);
@@ -258,6 +228,7 @@ void Texture::setPixels(uint8_t* pixels, int w, int h) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w, _h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 }
 

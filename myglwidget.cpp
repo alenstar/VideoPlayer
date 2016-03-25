@@ -249,7 +249,7 @@ void MyGLWidget::keyPressEvent(QKeyEvent *event)
 void MyGLWidget::timerEvent(QTimerEvent *event)
 {
     //m_angle += (float)(15.0)/60.0f;// 根据时间更新angle
-    //updateGL();
+    updateGL();
     QWidget::timerEvent(event);
 }
 

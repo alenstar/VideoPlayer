@@ -175,52 +175,6 @@ void PacketQueue::clear()
     this->mutex.unlock ();
 }
 
-#if 0
-int VideoState::OgreResource_Read(void *user_data, uint8_t *buf, int buf_size)
-{
-    Ogre::DataStreamPtr stream = static_cast<VideoState*>(user_data)->stream;
-    try
-    {
-        return stream->read(buf, buf_size);
-    }
-    catch (std::exception& e)
-    {
-        return 0;
-    }
-}
-
-int VideoState::OgreResource_Write(void *user_data, uint8_t *buf, int buf_size)
-{
-    Ogre::DataStreamPtr stream = static_cast<VideoState*>(user_data)->stream;
-    try
-    {
-        return stream->write(buf, buf_size);
-    }
-    catch (std::exception& e)
-    {
-        return 0;
-    }
-}
-
-int64_t VideoState::OgreResource_Seek(void *user_data, int64_t offset, int whence)
-{
-    Ogre::DataStreamPtr stream = static_cast<VideoState*>(user_data)->stream;
-
-    whence &= ~AVSEEK_FORCE;
-    if(whence == AVSEEK_SIZE)
-        return stream->size();
-    if(whence == SEEK_SET)
-        stream->seek(offset);
-    else if(whence == SEEK_CUR)
-        stream->seek(stream->tell()+offset);
-    else if(whence == SEEK_END)
-        stream->seek(stream->size()+offset);
-    else
-        return -1;
-
-    return stream->tell();
-}
-#else 
 int VideoState::OgreResource_Read(void *user_data, uint8_t *buf, int buf_size)
 {
     //std::fstream stream = static_cast<VideoState*>(user_data)->stream;
@@ -268,7 +222,6 @@ int64_t VideoState::OgreResource_Seek(void *user_data, int64_t offset, int whenc
 
     return stream->tell();
 }
-#endif
 
 void VideoState::video_display(VideoPicture *vp)
 {
